@@ -14,35 +14,27 @@ flowchart TD
     O1[Durable Orchestrator Function]
 
     %% Step 1: Trigger ADF Pipeline
-    O1 --> ADF[Activity: Trigger ADF Pipeline]
-    ADF --> SF1[Snowflake: Delta Tables]
+    O1 --> ADF[Trigger ADF Pipeline]
+    ADF --> SF1[Snowflake Delta Tables]
 
     %% Step 2: Parse Delete Logs
-    O1 --> PARSE[Activity: Parse delete-logs.db]
-    PARSE --> BLOB1[Blob Storage: delete-logs.db (SQLite)]
-    PARSE --> SF2[Snowflake: Delete Tracker Table]
+    O1 --> PARSE[Parse delete-logs.db]
+    PARSE --> BLOB1[Blob delete-logs.db SQLite]
+    PARSE --> SF2[Snowflake Delete Tracker Table]
 
     %% Step 3: Wait for Downstream Report
-    O1 --> WAIT[Activity: Wait for Downstream Report Blob]
-    WAIT --> BLOB2[Blob Storage: Downstream Report]
+    O1 --> WAIT[Wait for Downstream Report Blob]
+    WAIT --> BLOB2[Blob Downstream Report]
 
     %% Step 4: Run Validation
-    O1 --> VALIDATE[Activity: Run Data Validation]
-    VALIDATE --> SF3[Snowflake: Processed Data]
+    O1 --> VALIDATE[Run Data Validation]
+    VALIDATE --> SF3[Snowflake Processed Data]
     VALIDATE --> BLOB2
 
     %% Step 5: Save Validation Report
-    VALIDATE --> REPORT[Generate Validation Report (Excel)]
-    REPORT --> UPLOAD[Activity: Upload Report to Blob]
-    UPLOAD --> BLOB3[Blob Storage: Validation Report (Excel)]
-
-    %% Styling (optional: ignored in GitHub but useful in Mermaid Live)
-    classDef blob fill:#d9d2e9,stroke:#6a329f;
-    classDef snowflake fill:#f4cccc,stroke:#cc0000;
-    classDef func fill:#cfe2f3,stroke:#3c78d8;
-    class ADF,PARSE,WAIT,VALIDATE,UPLOAD func;
-    class SF1,SF2,SF3 snowflake;
-    class BLOB1,BLOB2,BLOB3 blob;
+    VALIDATE --> REPORT[Generate Validation Report Excel]
+    REPORT --> UPLOAD[Upload Report to Blob]
+    UPLOAD --> BLOB3[Blob Validation Report Excel]
 ```
 
 ---
