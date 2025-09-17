@@ -6,48 +6,43 @@ Here’s a **Mermaid diagram** to visualize your architecture using **Azure Dura
 
 ```mermaid
 flowchart TD
-    %% Trigger
-    A1[HTTP Trigger<br/>or Timer Trigger] --> O1
 
-    %% Orchestrator
-    subgraph Durable Orchestrator Function
-        O1[Orchestrator Function]
+    %% Trigger Start
+    A1[HTTP Trigger or Timer Trigger] --> O1
 
-        O1 --> ADF[Activity: Trigger ADF Pipeline]
-        ADF --> SF1[Snowflake: Delta Tables]
+    %% Durable Orchestrator
+    O1[Durable Orchestrator Function]
 
-        O1 --> PARSE[Activity: Parse delete-logs.db from Blob]
-        PARSE --> BLOB1[Blob Storage: delete-logs.db]
-        PARSE --> SF2[Snowflake: Delete Tracker Table]
+    %% Step 1: Trigger ADF Pipeline
+    O1 --> ADF[Activity: Trigger ADF Pipeline]
+    ADF --> SF1[Snowflake: Delta Tables]
 
-        O1 --> WAIT[Activity: Wait for Downstream Report Blob]
-        WAIT --> BLOB2[Blob Storage: Downstream Report]
+    %% Step 2: Parse Delete Logs
+    O1 --> PARSE[Activity: Parse delete-logs.db]
+    PARSE --> BLOB1[Blob Storage: delete-logs.db (SQLite)]
+    PARSE --> SF2[Snowflake: Delete Tracker Table]
 
-        O1 --> VALIDATE[Activity: Run Data Validation]
-        VALIDATE --> SF3[Snowflake: Processed Data]
-        VALIDATE --> BLOB2
+    %% Step 3: Wait for Downstream Report
+    O1 --> WAIT[Activity: Wait for Downstream Report Blob]
+    WAIT --> BLOB2[Blob Storage: Downstream Report]
 
-        VALIDATE --> REPORT[Validation Report (Excel)]
-        REPORT --> UPLOAD[Activity: Upload Validation Report to Blob]
-        UPLOAD --> BLOB3[Blob Storage: Validation Report]
-    end
+    %% Step 4: Run Validation
+    O1 --> VALIDATE[Activity: Run Data Validation]
+    VALIDATE --> SF3[Snowflake: Processed Data]
+    VALIDATE --> BLOB2
 
-    %% Styles
-    style Durable Orchestrator Function fill:#fdf6e3,stroke:#b58900,stroke-width:2px
-    style ADF fill:#cfe2f3,stroke:#3c78d8
-    style PARSE fill:#cfe2f3,stroke:#3c78d8
-    style WAIT fill:#cfe2f3,stroke:#3c78d8
-    style VALIDATE fill:#cfe2f3,stroke:#3c78d8
-    style UPLOAD fill:#cfe2f3,stroke:#3c78d8
+    %% Step 5: Save Validation Report
+    VALIDATE --> REPORT[Generate Validation Report (Excel)]
+    REPORT --> UPLOAD[Activity: Upload Report to Blob]
+    UPLOAD --> BLOB3[Blob Storage: Validation Report (Excel)]
 
-    style SF1 fill:#f4cccc,stroke:#cc0000
-    style SF2 fill:#f4cccc,stroke:#cc0000
-    style SF3 fill:#f4cccc,stroke:#cc0000
-
-    style BLOB1 fill:#d9d2e9,stroke:#6a329f
-    style BLOB2 fill:#d9d2e9,stroke:#6a329f
-    style BLOB3 fill:#d9d2e9,stroke:#6a329f
-    style REPORT fill:#ead1dc,stroke:#a64d79
+    %% Styling (optional: ignored in GitHub but useful in Mermaid Live)
+    classDef blob fill:#d9d2e9,stroke:#6a329f;
+    classDef snowflake fill:#f4cccc,stroke:#cc0000;
+    classDef func fill:#cfe2f3,stroke:#3c78d8;
+    class ADF,PARSE,WAIT,VALIDATE,UPLOAD func;
+    class SF1,SF2,SF3 snowflake;
+    class BLOB1,BLOB2,BLOB3 blob;
 ```
 
 ---
