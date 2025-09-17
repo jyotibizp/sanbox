@@ -6,34 +6,34 @@ Here’s a **Mermaid diagram** to visualize your architecture using **Azure Dura
 
 ```mermaid
 flowchart TD
-    subgraph Trigger
-        A1(HTTP Trigger<br/>or Timer Trigger)
-    end
+    %% Trigger
+    A1[HTTP Trigger<br/>or Timer Trigger] --> O1
 
-    subgraph DurableOrchestrator
-        O1[Durable Orchestrator Function]
+    %% Orchestrator
+    subgraph Durable Orchestrator Function
+        O1[Orchestrator Function]
+
         O1 --> ADF[Activity: Trigger ADF Pipeline]
-        ADF --> SF1[Snowflake Delta Tables]
-        
-        O1 --> PARSE[Activity: Parse delete-logs.db]
-        PARSE --> BLOB1[Azure Blob<br/>delete-logs.db]
-        PARSE --> SF2[Insert to Snowflake<br/>Delete Tracker Table]
-        
+        ADF --> SF1[Snowflake: Delta Tables]
+
+        O1 --> PARSE[Activity: Parse delete-logs.db from Blob]
+        PARSE --> BLOB1[Blob Storage: delete-logs.db]
+        PARSE --> SF2[Snowflake: Delete Tracker Table]
+
         O1 --> WAIT[Activity: Wait for Downstream Report Blob]
-        WAIT --> BLOB2[Azure Blob<br/>Downstream Report]
+        WAIT --> BLOB2[Blob Storage: Downstream Report]
 
         O1 --> VALIDATE[Activity: Run Data Validation]
-        VALIDATE --> SF3[Snowflake Processed Data]
+        VALIDATE --> SF3[Snowflake: Processed Data]
         VALIDATE --> BLOB2
 
         VALIDATE --> REPORT[Validation Report (Excel)]
-
-        O1 --> UPLOAD[Activity: Upload Validation Report]
-        UPLOAD --> BLOB3[Azure Blob<br/>Validation Report]
+        REPORT --> UPLOAD[Activity: Upload Validation Report to Blob]
+        UPLOAD --> BLOB3[Blob Storage: Validation Report]
     end
 
-    style DurableOrchestrator fill:#fdf6e3,stroke:#b58900,stroke-width:2px
-    style Trigger fill:#d9ead3,stroke:#38761d,stroke-width:1px
+    %% Styles
+    style Durable Orchestrator Function fill:#fdf6e3,stroke:#b58900,stroke-width:2px
     style ADF fill:#cfe2f3,stroke:#3c78d8
     style PARSE fill:#cfe2f3,stroke:#3c78d8
     style WAIT fill:#cfe2f3,stroke:#3c78d8
